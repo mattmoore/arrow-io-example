@@ -23,9 +23,9 @@ fun getCustomerAddressFromOrder(orderId: Int) =
 //   our code look more "imperative". This can be easier to read, rather than
 //   nesting each monad inside flatMap for as many times as there are monads.
 fun getCustomerAddressFromOrderComprehensions(orderId: Int) = IO.fx {
-    val (order) = getOrder(orderId)
-    val (customer) = getCustomer(order.customerId)
-    val (address) = getAddress(customer.addressId)
+    val order = !getOrder(orderId)
+    val customer = !getCustomer(order.customerId)
+    val address = !getAddress(customer.addressId)
     address
 }
 
