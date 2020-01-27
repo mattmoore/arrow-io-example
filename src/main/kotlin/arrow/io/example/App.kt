@@ -9,7 +9,7 @@ import arrow.fx.extensions.fx
 // As each monad is run, flatMap returns the success case.
 // If a given monad fails to return a value (an exception occurs), the remaining
 //   ones don't continue.
-fun getCustomerAddressFromOrder(orderId: Int) =
+fun getAddressFromOrder(orderId: Int) =
     getOrder(orderId).flatMap { order ->
         getCustomer(order.customerId).flatMap { customer ->
             getAddress(customer.addressId)
@@ -22,7 +22,7 @@ fun getCustomerAddressFromOrder(orderId: Int) =
 //   sugar that allows us to get the value of each monad on each line, making
 //   our code look more "imperative". This can be easier to read, rather than
 //   nesting each monad inside flatMap for as many times as there are monads.
-fun getCustomerAddressFromOrderComprehensions(orderId: Int) = IO.fx {
+fun getAddressFromOrderComprehensions(orderId: Int) = IO.fx {
     val order = !getOrder(orderId)
     val customer = !getCustomer(order.customerId)
     val address = !getAddress(customer.addressId)
@@ -31,19 +31,19 @@ fun getCustomerAddressFromOrderComprehensions(orderId: Int) = IO.fx {
 
 fun main(args: Array<String>) {
     // Run regular IO monad with nested monads
-    val addressFromNestedMonads = getCustomerAddressFromOrder(1).unsafeRunSync()
+    val addressFromNestedMonads = getAddressFromOrder(1).unsafeRunSync()
     println(addressFromNestedMonads)
 
     // Run monad comprehensions
     val addressFromComprehensions =
-        getCustomerAddressFromOrderComprehensions(1).unsafeRunSync()
+        getAddressFromOrderComprehensions(1).unsafeRunSync()
     println(addressFromComprehensions)
 
     // We combine nested monads with an Either<Left, Right> to have contextual
     //   final behavior.
     // In other words, the message we print can change based on whether
     //   the sequence of monads succeeded or failed.
-    getCustomerAddressFromOrder(1).attempt().map {
+    getAddressFromOrder(1).attempt().map {
         when (it) {
             is Either.Left  -> println("Not found")
             is Either.Right -> println(it.b)
@@ -52,7 +52,7 @@ fun main(args: Array<String>) {
 
     // We can also run monad comprehensions with a
     //   final Either<Left, Right> context.
-    getCustomerAddressFromOrderComprehensions(1).attempt().map {
+    getAddressFromOrderComprehensions(1).attempt().map {
         when (it) {
             is Either.Left  -> println("Not found")
             is Either.Right -> println(it.b)
@@ -74,7 +74,7 @@ fun main(args: Array<String>) {
     //   ever a failure.
 
     // Using nested IO monads:
-    getCustomerAddressFromOrder(-1).attempt().map {
+    getAddressFromOrder(-1).attempt().map {
         when (it) {
             is Either.Left  -> println("Not found")
             is Either.Right -> println(it.b)
@@ -82,7 +82,7 @@ fun main(args: Array<String>) {
     }.unsafeRunSync()
 
     // Using monad comprehensions:
-    getCustomerAddressFromOrderComprehensions(-1).attempt().map {
+    getAddressFromOrderComprehensions(-1).attempt().map {
         when (it) {
             is Either.Left  -> println("Not found")
             is Either.Right -> println(it.b)
