@@ -29,15 +29,12 @@ fun getAddressFromOrderComprehensions(orderId: Int) = IO.fx {
     address
 }
 
-fun main(args: Array<String>) {
+suspend fun main(args: Array<String>) {
     // Run regular IO monad with nested monads
-    val addressFromNestedMonads = getAddressFromOrder(1).unsafeRunSync()
-    println(addressFromNestedMonads)
+    println(getAddressFromOrder(1).suspended())
 
     // Run monad comprehensions
-    val addressFromComprehensions =
-        getAddressFromOrderComprehensions(1).unsafeRunSync()
-    println(addressFromComprehensions)
+    println(getAddressFromOrderComprehensions(1).suspended())
 
     // We combine nested monads with an Either<Left, Right> to have contextual
     //   final behavior.
@@ -48,7 +45,7 @@ fun main(args: Array<String>) {
             is Either.Left  -> println("Not found")
             is Either.Right -> println(it.b)
         }
-    }.unsafeRunSync()
+    }.suspended()
 
     // We can also run monad comprehensions with a
     //   final Either<Left, Right> context.
@@ -57,7 +54,7 @@ fun main(args: Array<String>) {
             is Either.Left  -> println("Not found")
             is Either.Right -> println(it.b)
         }
-    }.unsafeRunSync()
+    }.suspended()
 
 
     // But what happens if something fails?
@@ -79,7 +76,7 @@ fun main(args: Array<String>) {
             is Either.Left  -> println("Not found")
             is Either.Right -> println(it.b)
         }
-    }.unsafeRunSync()
+    }.suspended()
 
     // Using monad comprehensions:
     getAddressFromOrderComprehensions(-1).attempt().map {
@@ -87,5 +84,5 @@ fun main(args: Array<String>) {
             is Either.Left  -> println("Not found")
             is Either.Right -> println(it.b)
         }
-    }.unsafeRunSync()
+    }.suspended()
 }
