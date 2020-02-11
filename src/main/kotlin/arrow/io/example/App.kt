@@ -3,13 +3,14 @@ package arrow.io.example
 import arrow.core.Either
 import arrow.fx.IO
 import arrow.fx.extensions.fx
+import arrow.fx.handleError
 
 // With regular nested IO Monad - aka IO {}
 // What's happening:
 // As each monad is run, flatMap returns the success case.
 // If a given monad fails to return a value (an exception occurs), the remaining
 //   ones don't continue.
-fun getAddressFromOrder(orderId: Int) =
+fun getAddressFromOrder(orderId: Int): IO<Address> =
     getOrder(orderId).flatMap { order ->
         getCustomer(order.customerId).flatMap { customer ->
             getAddress(customer.addressId)
@@ -31,10 +32,21 @@ fun getAddressFromOrderComprehensions(orderId: Int) = IO.fx {
 
 suspend fun main(args: Array<String>) {
     // Run regular IO monad with nested monads
-    println(getAddressFromOrder(1).suspended())
+    println(
+            getAddressFromOrder(1)
+                    .handleError { "Address lookup failed." }
+                    .suspended()
+    )
+
+    // Run regular IO monad with nested monads
+    println(
+            getAddressFromOrder(-1)
+                    .handleError { "Address lookup failed." }
+                    .suspended()
+    )
 
     // Run monad comprehensions
-    println(getAddressFromOrderComprehensions(1).suspended())
+    println(getAddressFromOrderComprehensions(1).handleError { "Address lookup failed." }.suspended())
 
     // We combine nested monads with an Either<Left, Right> to have contextual
     //   final behavior.
@@ -45,7 +57,7 @@ suspend fun main(args: Array<String>) {
             is Either.Left  -> println("Not found")
             is Either.Right -> println(it.b)
         }
-    }.suspended()
+    }.handleError { println("Address lookup failed.") }.suspended()
 
     // We can also run monad comprehensions with a
     //   final Either<Left, Right> context.
@@ -54,7 +66,7 @@ suspend fun main(args: Array<String>) {
             is Either.Left  -> println("Not found")
             is Either.Right -> println(it.b)
         }
-    }.suspended()
+    }.handleError { println("Address lookup failed.") }.suspended()
 
 
     // But what happens if something fails?
@@ -76,7 +88,7 @@ suspend fun main(args: Array<String>) {
             is Either.Left  -> println("Not found")
             is Either.Right -> println(it.b)
         }
-    }.suspended()
+    }.handleError { println("Address lookup failed.") }.suspended()
 
     // Using monad comprehensions:
     getAddressFromOrderComprehensions(-1).attempt().map {
@@ -84,5 +96,5 @@ suspend fun main(args: Array<String>) {
             is Either.Left  -> println("Not found")
             is Either.Right -> println(it.b)
         }
-    }.suspended()
+    }.handleError { println("Address lookup failed.") }.suspended()
 }
